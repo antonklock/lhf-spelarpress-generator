@@ -38,6 +38,13 @@ const updateHandler = async (req: Request) => {
             });
         }
 
+        // Create uploads directory if it doesn't exist
+        try {
+            await Deno.stat('./uploads');
+        } catch {
+            await Deno.mkdir('./uploads');
+        }
+
         // Clear uploads directory
         try {
             for (const entry of Deno.readDirSync('./uploads')) {
