@@ -3,9 +3,18 @@ import ae from "npm:after-effects";
 try {
     ae(
         () => {
-            const FIRST_NAME = "Savanna";
-            const LAST_NAME = "Norcross";
-            const NUMBER = "71";
+            const FIRST_NAME = "Anton";
+            const LAST_NAME = "Klock";
+            const NUMBER = "7";
+
+            // const PLAYER_PORTRAIT_PATH = "E:\\Klockworks Dropbox\\KW NAS\\HOT_STORAGE\\00_CurrentProjects\\LHF-Spelarpresso-Generator\\05_CollectedFiles\\LHF_SpelarPresso_2025 folder\\(Footage)\\Material\\Images\\PLAYERS\\TEST IMAGES\\player_test_01.png";
+            const PLAYER_PORTRAIT_PATH = "E:\\Klockworks Dropbox\\KW NAS\\HOT_STORAGE\\00_CurrentProjects\\LHF-Spelarpresso-Generator\\05_CollectedFiles\\LHF_SpelarPresso_2025 folder\\(Footage)\\Material\\Images\\PLAYERS\\TEST IMAGES\\player_test_02.png";
+
+            // const PLAYER_FRONT_IMAGE_PATH = "E:\\Klockworks Dropbox\\KW NAS\\HOT_STORAGE\\00_CurrentProjects\\LHF-Spelarpresso-Generator\\05_CollectedFiles\\LHF_SpelarPresso_2025 folder\\(Footage)\\Material\\Images\\PLAYERS\\TEST IMAGES\\player_front_test_01.png";
+            const PLAYER_FRONT_IMAGE_PATH = "E:\\Klockworks Dropbox\\KW NAS\\HOT_STORAGE\\00_CurrentProjects\\LHF-Spelarpresso-Generator\\05_CollectedFiles\\LHF_SpelarPresso_2025 folder\\(Footage)\\Material\\Images\\PLAYERS\\TEST IMAGES\\player_front_test_02.png";
+
+            // const PLAYER_BACK_IMAGE_PATH = "E:\\Klockworks Dropbox\\KW NAS\\HOT_STORAGE\\00_CurrentProjects\\LHF-Spelarpresso-Generator\\05_CollectedFiles\\LHF_SpelarPresso_2025 folder\\(Footage)\\Material\\Images\\PLAYERS\\TEST IMAGES\\player_back_test_01.png";
+            const PLAYER_BACK_IMAGE_PATH = "E:\\Klockworks Dropbox\\KW NAS\\HOT_STORAGE\\00_CurrentProjects\\LHF-Spelarpresso-Generator\\05_CollectedFiles\\LHF_SpelarPresso_2025 folder\\(Footage)\\Material\\Images\\PLAYERS\\TEST IMAGES\\player_back_test_02.png";
 
             const project = app.project;
             if (!project) {
@@ -90,11 +99,44 @@ try {
             const playerPortraitLayer = playerPortraitComp.layers.byName("PLAYER PORTRAIT");
             if (!playerPortraitLayer) alert("Couldn't find playerPortraitLayer");
 
-            const newImagePath = prompt("Please enter the path to the new player portrait image:", "");
-            if (newImagePath) {
-                const newFootageItem = new ImportOptions(File(newImagePath));
+            if (PLAYER_PORTRAIT_PATH) {
+                const newFootageItem = new ImportOptions(File(PLAYER_PORTRAIT_PATH));
                 const newFootage = project.importFile(newFootageItem);
+                const oldSource = playerPortraitLayer.source;
                 playerPortraitLayer.replaceSource(newFootage, false);
+                oldSource.remove();
+            }
+
+            ////////// PLAYER FRONT IMAGE //////////
+
+            const playerFrontImageComp = searchForComp("PLAYER FRONT IMAGE", project.items);
+            if (!playerFrontImageComp) alert("Couldn't find playerFrontImageComp")
+
+            const playerFrontImageLayer = playerFrontImageComp.layers.byName("PLAYER FRONT IMAGE");
+            if (!playerFrontImageLayer) alert("Couldn't find playerFrontImageLayer");
+
+            if (PLAYER_FRONT_IMAGE_PATH) {
+                const newFootageItem = new ImportOptions(File(PLAYER_FRONT_IMAGE_PATH));
+                const newFootage = project.importFile(newFootageItem);
+                const oldSource = playerFrontImageLayer.source;
+                playerFrontImageLayer.replaceSource(newFootage, false);
+                oldSource.remove();
+            }
+
+            ////////// PLAYER BACK IMAGE //////////
+
+            const playerBackImageComp = searchForComp("PLAYER BACK IMAGE", project.items);
+            if (!playerBackImageComp) alert("Couldn't find playerBackImageComp")
+
+            const playerBackImageLayer = playerBackImageComp.layers.byName("PLAYER BACK IMAGE");
+            if (!playerBackImageLayer) alert("Couldn't find playerBackImageLayer");
+
+            if (PLAYER_BACK_IMAGE_PATH) {
+                const newFootageItem = new ImportOptions(File(PLAYER_BACK_IMAGE_PATH));
+                const newFootage = project.importFile(newFootageItem);
+                const oldSource = playerBackImageLayer.source;
+                playerBackImageLayer.replaceSource(newFootage, false);
+                oldSource.remove();
             }
 
             return project;
