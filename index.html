@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>LHF Player Presso updater</title>
+    <style>
+        body { 
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-family: system-ui;
+        }
+        .input-group {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            width: 300px;
+        }
+        .input-field {
+            margin: 10px 0;
+            display: flex;
+            flex-direction: column;
+        }
+        .input-field label {
+            margin-bottom: 5px;
+        }
+        .input-field input {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            padding: 12px 24px;
+            font-size: 18px;
+            border: none;
+            border-radius: 4px;
+            background: #007bff;
+            color: white;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+        }
+        button:disabled:hover {
+            background: #cccccc;
+        }
+        .file-drop-zone {
+            border: 2px dashed #ccc;
+            border-radius: 4px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .file-drop-zone:hover {
+            border-color: #007bff;
+            background-color: rgba(0, 123, 255, 0.05);
+        }
+
+        .drop-zone-text {
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .file-path {
+            font-size: 0.9em;
+            color: #007bff;
+            word-break: break-all;
+        }
+
+        /* Style for when file is being dragged over */
+        .file-drop-zone.dragover {
+            border-color: #007bff;
+            background-color: rgba(0, 123, 255, 0.1);
+        }
+
+        /* Loading spinner styles */
+        .spinner {
+            display: none;
+            width: 24px;
+            height: 24px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <h1>After Effects Controller</h1>
+    
+    <div class="input-group">
+        <div class="input-field">
+            <label for="firstName">First name</label>
+            <input type="text" id="firstName" name="firstName">
+        </div>
+        <div class="input-field">
+            <label for="lastName">Last name</label>
+            <input type="text" id="lastName" name="lastName">
+        </div>
+        <div class="input-field">
+            <label for="number">Number</label>
+            <input type="text" id="number" name="number">
+        </div>
+    </div>
+
+    <div class="input-group">
+        <div class="input-field">
+            <label for="portrait">Portrait</label>
+            <div class="file-drop-zone" id="portrait-drop" ondrop="handleDrop(event, 'portrait')" ondragover="handleDragOver(event)">
+                <input type="file" id="portrait" name="portrait" style="display: none;" accept="image/*" onchange="handleFileSelect(event, 'portrait')">
+                <div class="drop-zone-text">Drop image here or click to select</div>
+                <div class="file-path" id="portrait-path"></div>
+            </div>
+        </div>
+        <div class="input-field">
+            <label for="front">Front</label>
+            <div class="file-drop-zone" id="front-drop" ondrop="handleDrop(event, 'front')" ondragover="handleDragOver(event)">
+                <input type="file" id="front" name="front" style="display: none;" accept="image/*" onchange="handleFileSelect(event, 'front')">
+                <div class="drop-zone-text">Drop image here or click to select</div>
+                <div class="file-path" id="front-path"></div>
+            </div>
+        </div>
+        <div class="input-field">
+            <label for="back">Back</label>
+            <div class="file-drop-zone" id="back-drop" ondrop="handleDrop(event, 'back')" ondragover="handleDragOver(event)">
+                <input type="file" id="back" name="back" style="display: none;" accept="image/*" onchange="handleFileSelect(event, 'back')">
+                <div class="drop-zone-text">Drop image here or click to select</div>
+                <div class="file-path" id="back-path"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="spinner" id="loadingSpinner"></div>
+    <button id="updateButton" onclick="handleClick()" disabled>Update</button>
+
+    <script>
+        function checkFields() {
+            const firstName = document.getElementById('firstName').value.trim();
+            const lastName = document.getElementById('lastName').value.trim();
+            const number = document.getElementById('number').value.trim();
+            const portrait = document.getElementById('portrait');
+            const front = document.getElementById('front');
+            const back = document.getElementById('back');
+
+            // Hide/show instruction text based on file selection
+            ['portrait', 'front', 'back'].forEach(id => {
+                const input = document.getElementById(id);
+                const dropZone = document.getElementById(`${id}-drop`);
+                const dropText = dropZone.querySelector('.drop-zone-text');
+                if (input.files && input.files[0]) {
+                    dropText.style.display = 'none';
+                } else {
+                    dropText.style.display = 'block';
+                }
+            });
+
+            const updateButton = document.getElementById('updateButton');
+            updateButton.disabled = !firstName || !lastName || !number || 
+                                  !portrait.files.length || !front.files.length || !back.files.length;
+        }
+
+        // Call checkFields on page load
+        document.addEventListener('DOMContentLoaded', checkFields);
+
+        async function handleClick() {
+            const updateButton = document.getElementById('updateButton');
+            const spinner = document.getElementById('loadingSpinner');
+            
+            // Hide button, show spinner
+            updateButton.style.display = 'none';
+            spinner.style.display = 'block';
+
+            const firstName = document.getElementById('firstName').value.trim();
+            const lastName = document.getElementById('lastName').value.trim();
+            const number = document.getElementById('number').value.trim();
+            const portrait = document.getElementById('portrait').files[0];
+            const front = document.getElementById('front').files[0];
+            const back = document.getElementById('back').files[0];
+
+            if (!firstName || !lastName || !number || !portrait || !front || !back) {
+                alert("Please fill in all fields and select all required images");
+                return;
+            }
+
+            // Create FormData to handle file uploads
+            const formData = new FormData();
+            formData.append('firstName', firstName);
+            formData.append('lastName', lastName);
+            formData.append('number', number);
+            formData.append('portrait', portrait);
+            formData.append('front', front);
+            formData.append('back', back);
+            
+            try {
+                const response = await fetch('/update', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+            } catch (error) {
+                alert('Error: ' + error.message);
+            } finally {
+                // Show button, hide spinner
+                updateButton.style.display = 'block';
+                spinner.style.display = 'none';
+            }
+        }
+
+        function handleDragOver(event) {
+            event.preventDefault();
+            event.currentTarget.classList.add('dragover');
+        }
+
+        function handleDrop(event, inputId) {
+            event.preventDefault();
+            event.currentTarget.classList.remove('dragover');
+            const file = event.dataTransfer.files[0];
+            if (file) {
+                const input = document.getElementById(inputId);
+                input.files = event.dataTransfer.files;
+                const dropZone = document.getElementById(`${inputId}-drop`);
+                dropZone.querySelector('.drop-zone-text').style.display = 'none';
+                document.getElementById(`${inputId}-path`).textContent = file.name;
+                checkFields();
+            }
+        }
+
+        document.querySelectorAll('.file-drop-zone').forEach(zone => {
+            zone.addEventListener('dragleave', (event) => {
+                event.currentTarget.classList.remove('dragover');
+            });
+            zone.addEventListener('click', (event) => {
+                event.currentTarget.querySelector('input[type="file"]').click();
+            });
+        });
+
+        function handleFileSelect(event, inputId) {
+            const file = event.target.files[0];
+            if (file) {
+                const dropZone = document.getElementById(`${inputId}-drop`);
+                dropZone.querySelector('.drop-zone-text').style.display = 'none';
+                document.getElementById(`${inputId}-path`).textContent = file.name;
+                checkFields();
+            }
+        }
+    </script>
+</body>
+</html>
